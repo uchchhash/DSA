@@ -1,0 +1,6 @@
+Hello World
+Hello World
+Hello World
+Hello Mars
+Value of x: 10
+Value of y: 30
