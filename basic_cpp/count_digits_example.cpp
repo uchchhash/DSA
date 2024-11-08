@@ -3,6 +3,7 @@
 #include<bits/stdc++.h>
 #include<iostream>
 #include<utility>
+#include <cmath>
 using namespace std; 
 
 
@@ -20,6 +21,28 @@ void displayDigits(int N){
     }
 }
 
+int reverseNumbers(int N){
+    int revN = 0;
+    while(N>0){
+        int lastDigit = N % 10;
+        N = N / 10;
+        revN = (revN*10) + lastDigit;
+    }
+    return revN;
+}
+
+bool palindromeOrNot(int N){
+    int revN = 0;
+    int tempN = N;
+    while(N>0){
+        int lastDigit = N % 10;
+        N = N / 10;
+        revN = (revN*10)+lastDigit;
+    }
+    return tempN == revN;
+}
+
+
 int countDigits(int N){
     int count=0;
     while(N>0){
@@ -29,13 +52,16 @@ int countDigits(int N){
     return count;
 }
 
-int reverseNumbers(int N){
-    int revN = 0;
+bool armstrongOrNot(int N){
+    int originalN = N;
+    int result = 0;
+    int numDigits = countDigits(N);
     while(N>0){
-        int lastDigit = N % 10;
+        int lastDigit = N%10;
         N = N / 10;
-        revN = (revN*10) + lastDigit;
+        result += pow(lastDigit, numDigits);
     }
+    return (originalN == result);
 }
 
 int main() {
@@ -50,4 +76,15 @@ int main() {
     int revN;
     revN = reverseNumbers(5789);
     cout << "reverse-number = " << revN <<endl;
+    
+    int n = 123454321;
+    bool palindrome = palindromeOrNot(n);
+    printf("number = %d || palindromeOrNot = %d", n, palindrome);
+
+    cout <<endl;
+    cout <<endl;
+    int n2 = 9474;
+    bool armstrong = armstrongOrNot(n2);
+    printf("number = %d || armstrongOrNot = %d", n2, armstrong);
+
 }
