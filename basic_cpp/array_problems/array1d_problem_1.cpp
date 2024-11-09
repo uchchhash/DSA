@@ -13,9 +13,12 @@ vector<string> split(const string &);
  * The function accepts INTEGER_ARRAY a as parameter.
  */
 
+0 1 2 3 
+3 2 1 0
+
 vector<int> reverseArray(vector<int> a) {
     for(int i=0; i<a.size(); i++){
-        return a[i];
+        a[i];
     }
 }
 

@@ -64,6 +64,8 @@ bool armstrongOrNot(int N){
     return (originalN == result);
 }
 
+
+
 int main() {
 
     int x = 7789;
