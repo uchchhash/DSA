@@ -1,212 +1,180 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/*
---------------------------------------------------------------------
-                           SLIDING WINDOW
---------------------------------------------------------------------
-Goal of this example:
-    Given:
-        • n  = number of elements
-        • arr[0..n-1] = array of integers
-        • k  = window size (k <= n)
+// =======================================================
+//  Fixed-size Sliding Window (array of ints)
+//  Assumption: 1 <= k <= n
+// =======================================================
 
-    Find:
-        • Maximum sum of any CONTIGUOUS subarray of size k
+// 1) Maximum sum of any subarray of size k
+long long max_sum_k(const vector<int> &a, int k) {
+    int n = (int)a.size();
+    long long window_sum = 0;
 
-Example:
-    arr = [1, 2, 3, 4, 5], k = 3
+    // build first window
+    for (int i = 0; i < k; i++) window_sum += a[i];
 
-    Windows of size 3:
-        [1, 2, 3] → sum = 6
-        [2, 3, 4] → sum = 9
-        [3, 4, 5] → sum = 12  (maximum)
+    long long best = window_sum;
 
---------------------------------------------------------------------
-What is Sliding Window?
-
-    • Technique to process ranges [L..R] in an array/string efficiently.
-    • Instead of recomputing from scratch for each range,
-      we "slide" a window and update the answer in O(1) per step.
-
-Fixed-size window (this example):
-    • Window size is always K
-    • We move:
-          window_start (left pointer)
-          window_end   (right pointer)
-
-    • At every step:
-          - Add new element at right
-          - Remove old element at left
-          - Move both pointers forward
-
-Time Complexity:
-    • O(n)
-      Because each element is added once and removed once.
-
-Space Complexity:
-    • O(1)
-      We only store:
-         - current_sum
-         - max_sum
-         - few indices
---------------------------------------------------------------------
-**Sliding Window problems**
-
-# ✅ **Beginner Level Sliding Window Problems**
-
-1. Maximum sum of any subarray of size **k**
-2. Minimum sum of any subarray of size **k**
-3. Print all subarrays of size **k**
-4. Average of all subarrays of size **k**
-5. Count how many subarrays of size **k** have sum ≥ X
-
----
-
-# ✅ **Basic–Mid Level Sliding Window Problems**
-
-6. Longest substring without repeating characters
-7. Longest subarray with sum ≤ X
-8. Smallest subarray with sum ≥ X
-9. Count subarrays with sum exactly = X (positive numbers)
-10. Longest subarray with all 1s after flipping at most K zeros
-11. Number of subarrays with product < X
-12. Longest substring with at most K distinct characters
-13. Longest substring with exactly K distinct characters
-14. Find all anagrams of a pattern inside a string
-15. Minimum window substring (basic-mid version)
-
-
-*/
-
-int main() {
-
-    // ==============================================================
-    // 1. Input: array size
-    // ==============================================================
-    cout << "Enter the number of elements of the Array = ";
-    int n;
-    cin >> n;
-
-    vector<int> arr(n);
-
-    // ==============================================================
-    // 2. Input: array elements (unsorted is fine)
-    // ==============================================================
-    cout << "Enter elements of the Array" << endl;
-    for (int i = 0; i < n; i++) {
-        cout << "Enter element [" << i << "] = ";
-        cin >> arr[i];
+    // slide window
+    for (int i = k; i < n; i++) {
+        window_sum += a[i];       // add new
+        window_sum -= a[i - k];   // remove old
+        best = max(best, window_sum);
     }
 
-    // ==============================================================
-    // 3. Input: window size k
-    // ==============================================================
-    cout << "\nEnter window size k = ";
-    int k;
-    cin >> k;
+    return best;
+}
 
-    if (k <= 0 || k > n) {
-        cout << "Invalid window size. It must satisfy: 1 <= k <= n\n";
-        return 0;
+// 2) Minimum sum of any subarray of size k
+long long min_sum_k(const vector<int> &a, int k) {
+    int n = (int)a.size();
+    long long window_sum = 0;
+
+    for (int i = 0; i < k; i++) window_sum += a[i];
+    long long best = window_sum;
+
+    for (int i = k; i < n; i++) {
+        window_sum += a[i];
+        window_sum -= a[i - k];
+        best = min(best, window_sum);
     }
 
-    // ==============================================================
-    // 4. Initialize sliding window
-    //    First window: indices [0 .. k-1]
-    // ==============================================================
-    int window_start = 0;
-    int window_end   = 0;
+    return best;
+}
 
-    long long current_sum = 0;   // sum of current window
-    long long max_sum     = LLONG_MIN;
-    int max_start_index   = 0;   // to remember where max window starts
+// 3) Average of all subarrays of size k
+vector<double> avg_all_k(const vector<int> &a, int k) {
+    int n = (int)a.size();
+    vector<double> res;
+    if (k > n) return res;
 
-    cout << "\nBuilding initial window [0.." << (k-1) << "]\n";
+    long long window_sum = 0;
+    for (int i = 0; i < k; i++) window_sum += a[i];
+    res.push_back((double)window_sum / k);
 
-    // Build the first window of size k
-    for (window_end = 0; window_end < k; window_end++) {
-        current_sum += arr[window_end];
-        cout << "Adding arr[" << window_end << "] = " << arr[window_end]
-             << ", current_sum = " << current_sum << endl;
+    for (int i = k; i < n; i++) {
+        window_sum += a[i];
+        window_sum -= a[i - k];
+        res.push_back((double)window_sum / k);
     }
 
-    max_sum = current_sum;
-    max_start_index = 0;
+    return res;
+}
 
-    cout << "Initial window sum = " << current_sum << endl;
-    cout << "Current max_sum = " << max_sum << " for window [0.." << (k-1) << "]\n";
+// 4) Count subarrays of size k with sum >= X
+int count_subarrays_k_sum_ge_x(const vector<int> &a, int k, long long X) {
+    int n = (int)a.size();
+    if (k > n) return 0;
 
-    // ==============================================================
-    // 5. Slide the window across the array
-    //
-    //    Now window is always size k:
-    //        Before slide: [window_start .. window_end-1]
-    //        After slide : [window_start+1 .. window_end]
-    //
-    //    Steps when sliding:
-    //        1) Remove arr[window_start]   from current_sum
-    //        2) Add    arr[window_end]     to current_sum
-    //        3) Move   window_start++
-    // ==============================================================
-    cout << "\nStarting to slide the window...\n";
+    long long window_sum = 0;
+    for (int i = 0; i < k; i++) window_sum += a[i];
+    int cnt = 0;
+    if (window_sum >= X) cnt++;
 
-    while (window_end < n) {
-        /*
-            At this point:
-                - Previous loop created a window [window_start .. window_end-1] of size k
-                - window_end is currently at index k, then k+1, ..., n-1
-                - New window after slide will be [window_start+1 .. window_end]
-        */
+    for (int i = k; i < n; i++) {
+        window_sum += a[i];
+        window_sum -= a[i - k];
+        if (window_sum >= X) cnt++;
+    }
 
-        // Remove the element that is leaving the window
-        cout << "\nSliding window by 1 step...\n";
-        cout << "Removing arr[" << window_start << "] = " << arr[window_start]
-             << " from current_sum\n";
-        current_sum -= arr[window_start];
+    return cnt;
+}
 
-        // Shift window_start to the right
-        window_start++;
+// 5) Collect all subarrays of size k (for practice / debugging)
+vector<vector<int>> all_subarrays_k(const vector<int> &a, int k) {
+    int n = (int)a.size();
+    vector<vector<int>> res;
+    if (k > n) return res;
 
-        // Add the new element entering the window
-        cout << "Adding arr[" << window_end << "] = " << arr[window_end]
-             << " to current_sum\n";
-        current_sum += arr[window_end];
+    for (int start = 0; start + k <= n; start++) {
+        vector<int> window;
+        for (int i = start; i < start + k; i++) window.push_back(a[i]);
+        res.push_back(window);
+    }
+    return res;
+}
 
-        // Now the window is [window_start .. window_end]
-        cout << "Current window = ["
-             << window_start << ".." << window_end << "], "
-             << "current_sum = " << current_sum << endl;
+// =======================================================
+//  Variable-size Sliding Window (positive/ non-negative arrays)
+// =======================================================
+// These assume a[] elements are >= 0 (important for correctness)
 
-        // Update max_sum if this window is better
-        if (current_sum > max_sum) {
-            cout << "New max_sum found! Old = " << max_sum
-                 << ", New = " << current_sum << endl;
-            max_sum = current_sum;
-            max_start_index = window_start;
-        } else {
-            cout << "max_sum stays = " << max_sum << endl;
+// 6) Smallest subarray with sum >= X (positive numbers)
+int smallest_subarray_sum_at_least_x(const vector<int> &a, long long X) {
+    int n = (int)a.size();
+    int left = 0;
+    long long window_sum = 0;
+    int best_len = INT_MAX;
+
+    for (int right = 0; right < n; right++) {
+        window_sum += a[right];
+
+        // shrink from left while condition holds
+        while (window_sum >= X) {
+            best_len = min(best_len, right - left + 1);
+            window_sum -= a[left];
+            left++;
+        }
+    }
+
+    if (best_len == INT_MAX) return -1; // no such subarray
+    return best_len;
+}
+
+// 7) Longest subarray with sum <= X (non-negative numbers)
+int longest_subarray_sum_at_most_x(const vector<int> &a, long long X) {
+    int n = (int)a.size();
+    int left = 0;
+    long long window_sum = 0;
+    int best_len = 0;
+
+    for (int right = 0; right < n; right++) {
+        window_sum += a[right];
+
+        // shrink until sum <= X
+        while (window_sum > X && left <= right) {
+            window_sum -= a[left];
+            left++;
         }
 
-        // Move window_end one step to the right
-        window_end++;
+        // now sum <= X
+        best_len = max(best_len, right - left + 1);
     }
 
-    // ==============================================================
-    // 6. Print final result
-    // ==============================================================
-    cout << "\n================ RESULT ================\n";
-    cout << "Maximum sum of any subarray of size " << k
-         << " is = " << max_sum << endl;
+    return best_len;
+}
 
-    cout << "This maximum sum window is from index ["
-         << max_start_index << ".." << (max_start_index + k - 1)
-         << "], elements: ";
+// =======================================================
+//  Example main() just to test functions quickly
+//  You can comment this out and write your own tests.
+// =======================================================
+int main() {
+    int n, k;
+    cout << "n = ";
+    cin >> n;
+    vector<int> a(n);
+    cout << "array: ";
+    for (int i = 0; i < n; i++) cin >> a[i];
 
-    for (int i = max_start_index; i < max_start_index + k; i++) {
-        cout << arr[i] << " ";
-    }
-    cout << "\n";
+    cout << "k = ";
+    cin >> k;
+
+    cout << "max_sum_k = " << max_sum_k(a, k) << "\n";
+    cout << "min_sum_k = " << min_sum_k(a, k) << "\n";
+
+    long long X;
+    cout << "X (for sum>=X, <=X problems) = ";
+    cin >> X;
+
+    cout << "count_subarrays_k_sum_ge_x = "
+         << count_subarrays_k_sum_ge_x(a, k, X) << "\n";
+
+    cout << "smallest_subarray_sum_at_least_x = "
+         << smallest_subarray_sum_at_least_x(a, X) << "\n";
+
+    cout << "longest_subarray_sum_at_most_x = "
+         << longest_subarray_sum_at_most_x(a, X) << "\n";
 
     return 0;
 }

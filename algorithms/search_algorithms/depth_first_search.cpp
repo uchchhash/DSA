@@ -76,59 +76,152 @@ void dfs_stack(int start, vector<vector<int>>& G, vector<bool>& marked) {
 }
 
 
+// ----------------------------
+// DFS on Grid
+// ----------------------------
+int dx[4] = {-1, 1, 0, 0};
+int dy[4] = {0, 0, -1, 1};
+
+void dfs_grid(int x, int y, vector<vector<int>>& grid, vector<vector<bool>>& vis) {
+    int R = grid.size();
+    int C = grid[0].size();
+
+    vis[x][y] = true;
+
+    for (int dir = 0; dir < 4; dir++) {
+        int nx = x + dx[dir];
+        int ny = y + dy[dir];
+
+        if (nx >= 0 && nx < R && ny >= 0 && ny < C) {
+            if (!vis[nx][ny] && grid[nx][ny] == 1) {
+                dfs_grid(nx, ny, grid, vis);
+            }
+        }
+    }
+}
+
 
 // ----------------------------
-// Driver Code
+// DFS Backtracking Example
+// ----------------------------
+void dfs_backtrack(int index, vector<int>& path, vector<int>& arr) {
+    // print current combination
+    cout << "{ ";
+    for (int x : path) cout << x << " ";
+    cout << "}\n";
+
+    for (int i = index; i < arr.size(); i++) {
+        path.push_back(arr[i]);       // choose
+        dfs_backtrack(i + 1, path, arr); // explore
+        path.pop_back();              // un-choose (backtrack)
+    }
+}
+
+
+// ----------------------------
+// DFS Cycle Detection
+// ----------------------------
+bool dfs_cycle(int v, int parent, vector<vector<int>>& G, vector<bool>& visited) {
+    visited[v] = true;
+
+    for (int nei : G[v]) {
+        if (!visited[nei]) {
+            if (dfs_cycle(nei, v, G, visited)) return true;
+        }
+        else if (nei != parent) {
+            return true; // cycle found
+        }
+    }
+    return false;
+}
+
+
+// ----------------------------
+// Driver Code + TESTCASES
 // ----------------------------
 int main() {
 
-    // Number of nodes in the graph
-    cout << "Enter number of nodes: ";
-    int n;
-    cin >> n;
+    cout << "\n======================================\n";
+    cout << " TESTCASE 1: GRAPH DFS\n";
+    cout << "======================================\n";
 
-    // Graph represented as adjacency list:
-    // G[i] = list of neighbors of node i
-    vector<vector<int>> G(n);
+    // Graph adjacency list
+    vector<vector<int>> G1 = {
+        {1, 2},     // 0
+        {0, 3},     // 1
+        {0, 3},     // 2
+        {1, 2, 4},  // 3
+        {3}         // 4
+    };
 
-    // Number of edges
-    cout << "Enter number of edges: ";
-    int e;
-    cin >> e;
+    vector<bool> vis1(5, false);
+    cout << "DFS Recursive starting at 0: ";
+    dfs_recursive(0, G1, vis1);
+    cout << "\n";
 
-    // Input edges one by one
-    // For an undirected graph, we push both (u -> v) and (v -> u)
-    cout << "Enter edges (u v):\n";
-    for (int i = 0; i < e; i++) {
-        int u, v;
-        cin >> u >> v;
-        G[u].push_back(v);
-        G[v].push_back(u);
+    fill(vis1.begin(), vis1.end(), false);
+    cout << "DFS Stack starting at 0: ";
+    dfs_stack(0, G1, vis1);
+    cout << "\n";
+
+
+    cout << "\n======================================\n";
+    cout << " TESTCASE 2: CYCLE DETECTION\n";
+    cout << "======================================\n";
+
+    vector<vector<int>> G2 = {
+        {1},        // 0
+        {0, 2},     // 1
+        {1, 3},     // 2
+        {2, 1}      // 3 --> back edge to 1 creates a cycle
+    };
+
+    vector<bool> vis2(4, false);
+    bool cycle = dfs_cycle(0, -1, G2, vis2);
+    cout << "Cycle present? " << (cycle ? "YES" : "NO") << "\n";
+
+
+    cout << "\n======================================\n";
+    cout << " TESTCASE 3: GRID DFS (Number of Islands)\n";
+    cout << "======================================\n";
+
+    vector<vector<int>> grid = {
+        {1,0,1,1},
+        {1,1,0,0},
+        {0,1,1,0},
+        {0,0,1,1}
+    };
+
+    int R = grid.size(), C = grid[0].size();
+    vector<vector<bool>> visg(R, vector<bool>(C, false));
+
+    int islands = 0;
+    for (int i = 0; i < R; i++) {
+        for (int j = 0; j < C; j++) {
+            if (grid[i][j] == 1 && !visg[i][j]) {
+                islands++;
+                dfs_grid(i, j, grid, visg);
+            }
+        }
     }
 
-    // -----------------------------
-    // Run DFS Recursively
-    // -----------------------------
-    cout << "\n--- DFS (Recursive) ---\n";
-
-    // Create a visited array initialized to false
-    vector<bool> marked_r(n, false);
-
-    // Start DFS from node 0
-    dfs_recursive(0, G, marked_r);
+    cout << "Number of islands = " << islands << "\n";
 
 
+    cout << "\n======================================\n";
+    cout << " TESTCASE 4: DFS BACKTRACKING (Subsets)\n";
+    cout << "======================================\n";
 
-    // -----------------------------
-    // Run DFS Using a Stack
-    // -----------------------------
-    cout << "\n--- DFS (Stack) ---\n";
+    vector<int> arr = {1, 2, 3};
+    vector<int> path;
 
-    // Reset visited array
-    vector<bool> marked_s(n, false);
+    cout << "All subsets:\n";
+    dfs_backtrack(0, path, arr);
 
-    // Start stack-based DFS from node 0
-    dfs_stack(0, G, marked_s);
+
+    cout << "\n======================================\n";
+    cout << " END OF TESTCASES\n";
+    cout << "======================================\n";
 
     return 0;
 }
